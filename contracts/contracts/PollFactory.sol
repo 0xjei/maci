@@ -8,6 +8,9 @@ import { TopupCredit } from "./TopupCredit.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { Poll } from "./Poll.sol";
+import { MessageProcessor } from "./MessageProcessor.sol";
+import { Tally } from "./Tally.sol";
+import { Subsidy } from "./Subsidy.sol";
 
 /// @title PollFactory
 /// @notice A factory contract which deploys Poll contracts. It allows the MACI contract
@@ -41,7 +44,9 @@ contract PollFactory is Params, DomainObjs {
     PubKey calldata _coordinatorPubKey,
     IMACI _maci,
     TopupCredit _topupCredit,
-    address _pollOwner
+    address _pollOwner,
+    Verifier _verifier,
+    VkRegistry _vkRegistry
   ) public returns (Poll poll) {
     /// @notice Validate _maxValues
     /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;

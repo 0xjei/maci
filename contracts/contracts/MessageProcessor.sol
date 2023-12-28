@@ -38,40 +38,42 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @notice The commitment to the state and ballot roots
   uint256 public sbCommitment;
 
+  Poll public poll;
   Verifier public verifier;
   VkRegistry public vkRegistry;
 
   /// @notice Create a new instance
   /// @param _verifier The Verifier contract address
   /// @param _vkRegistry The VkRegistry contract address
-  constructor(Verifier _verifier, VkRegistry _vkRegistry) payable {
+  /// @param _poll The Poll contract address
+  constructor(Verifier _verifier, VkRegistry _vkRegistry, Poll _poll) payable {
     verifier = _verifier;
     vkRegistry = _vkRegistry;
+    poll = _poll;
   }
 
   /// @notice Update the Poll's currentSbCommitment if the proof is valid.
-  /// @param _poll The poll to update
   /// @param _newSbCommitment The new state root and ballot root commitment
   ///                         after all messages are processed
   /// @param _proof The zk-SNARK proof
-  function processMessages(Poll _poll, uint256 _newSbCommitment, uint256[8] memory _proof) external onlyOwner {
-    _votingPeriodOver(_poll);
+  function processMessages(uint256 _newSbCommitment, uint256[8] memory _proof) external onlyOwner {
+    _votingPeriodOver(poll);
     // There must be unprocessed messages
     if (processingComplete) {
       revert NoMoreMessages();
     }
 
     // The state AccQueue must be merged
-    if (!_poll.stateAqMerged()) {
+    if (!poll.stateAqMerged()) {
       revert StateAqNotMerged();
     }
 
     // Retrieve stored vals
-    (, , uint8 messageTreeDepth, ) = _poll.treeDepths();
-    (uint256 messageBatchSize, , ) = _poll.batchSizes();
+    (, , uint8 messageTreeDepth, ) = poll.treeDepths();
+    (uint256 messageBatchSize, , ) = poll.batchSizes();
 
     AccQueue messageAq;
-    (, messageAq, ) = _poll.extContracts();
+    (, messageAq, ) = poll.extContracts();
 
     // Require that the message queue has been merged
     uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
@@ -82,9 +84,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     // Copy the state and ballot commitment and set the batch index if this
     // is the first batch to process
     if (numBatchesProcessed == 0) {
-      uint256 currentSbCommitment = _poll.currentSbCommitment();
+      uint256 currentSbCommitment = poll.currentSbCommitment();
       sbCommitment = currentSbCommitment;
-      (, uint256 numMessages) = _poll.numSignUpsAndMessages();
+      (, uint256 numMessages) = poll.numSignUpsAndMessages();
       uint256 r = numMessages % messageBatchSize;
 
       if (r == 0) {
@@ -102,20 +104,13 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
       }
     }
 
-    bool isValid = verifyProcessProof(
-      _poll,
-      currentMessageBatchIndex,
-      messageRoot,
-      sbCommitment,
-      _newSbCommitment,
-      _proof
-    );
+    bool isValid = verifyProcessProof(currentMessageBatchIndex, messageRoot, sbCommitment, _newSbCommitment, _proof);
     if (!isValid) {
       revert InvalidProcessMessageProof();
     }
 
     {
-      (, uint256 numMessages) = _poll.numSignUpsAndMessages();
+      (, uint256 numMessages) = poll.numSignUpsAndMessages();
       // Decrease the message batch start index to ensure that each
       // message batch is processed in order
       if (currentMessageBatchIndex > 0) {
@@ -132,7 +127,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
   /// @notice Verify the proof for processMessage
   /// @dev used to update the sbCommitment
-  /// @param _poll The Poll contract address
   /// @param _currentMessageBatchIndex The batch index of current message batch
   /// @param _messageRoot The message tree root
   /// @param _currentSbCommitment The current sbCommitment (state and ballot)
@@ -140,21 +134,19 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @param _proof The zk-SNARK proof
   /// @return isValid Whether the proof is valid
   function verifyProcessProof(
-    Poll _poll,
     uint256 _currentMessageBatchIndex,
     uint256 _messageRoot,
     uint256 _currentSbCommitment,
     uint256 _newSbCommitment,
     uint256[8] memory _proof
   ) internal view returns (bool isValid) {
-    (, , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
-    (uint256 messageBatchSize, , ) = _poll.batchSizes();
-    (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
-    (IMACI maci, , ) = _poll.extContracts();
+    (, , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (uint256 messageBatchSize, , ) = poll.batchSizes();
+    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
+    (IMACI maci, , ) = poll.extContracts();
 
     // Calculate the public input hash (a SHA256 hash of several values)
     uint256 publicInputHash = genProcessMessagesPublicInputHash(
-      _poll,
       _currentMessageBatchIndex,
       _messageRoot,
       numSignUps,
@@ -180,25 +172,23 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// as a single public input and the preimage as private inputs, we reduce
   /// its verification gas cost though the number of constraints will be
   /// higher and proving time will be longer.
-  /// @param _poll The Poll contract address
   /// @param _currentMessageBatchIndex The batch index of current message batch
   /// @param _numSignUps The number of users that signup
   /// @param _currentSbCommitment The current sbCommitment (state and ballot root)
   /// @param _newSbCommitment The new sbCommitment after we update this message batch
   /// @return inputHash Returns the SHA256 hash of the packed values
   function genProcessMessagesPublicInputHash(
-    Poll _poll,
     uint256 _currentMessageBatchIndex,
     uint256 _messageRoot,
     uint256 _numSignUps,
     uint256 _currentSbCommitment,
     uint256 _newSbCommitment
   ) public view returns (uint256 inputHash) {
-    uint256 coordinatorPubKeyHash = _poll.coordinatorPubKeyHash();
+    uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
 
-    uint256 packedVals = genProcessMessagesPackedVals(_poll, _currentMessageBatchIndex, _numSignUps);
+    uint256 packedVals = genProcessMessagesPackedVals(_currentMessageBatchIndex, _numSignUps);
 
-    (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
+    (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
 
     uint256[] memory input = new uint256[](6);
     input[0] = packedVals;
@@ -215,18 +205,16 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// 250-bit value, which consists of the maximum number of vote options, the
   /// number of signups, the current message batch index, and the end index of
   /// the current batch.
-  /// @param _poll the poll contract
   /// @param _currentMessageBatchIndex batch index of current message batch
   /// @param _numSignUps number of users that signup
   /// @return result The packed value
   function genProcessMessagesPackedVals(
-    Poll _poll,
     uint256 _currentMessageBatchIndex,
     uint256 _numSignUps
   ) public view returns (uint256 result) {
-    (, uint256 maxVoteOptions) = _poll.maxValues();
-    (, uint256 numMessages) = _poll.numSignUpsAndMessages();
-    (uint24 mbs, , ) = _poll.batchSizes();
+    (, uint256 maxVoteOptions) = poll.maxValues();
+    (, uint256 numMessages) = poll.numSignUpsAndMessages();
+    (uint24 mbs, , ) = poll.batchSizes();
     uint256 messageBatchSize = uint256(mbs);
 
     uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;

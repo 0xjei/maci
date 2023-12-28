@@ -11,6 +11,8 @@ import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
 import { TopupCredit } from "./TopupCredit.sol";
 import { Utilities } from "./utilities/Utilities.sol";
+import { Verifier } from "./crypto/Verifier.sol";
+import { VkRegistry } from "./VkRegistry.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
@@ -173,12 +175,16 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @param _maxValues The maximum number of vote options, and messages
   /// @param _treeDepths The depth of the Merkle trees
   /// @param _coordinatorPubKey The coordinator's public key
+  /// @param _verifier The Verifier Contract
+  /// @param _vkRegistry The VkRegistry Contract
   /// @return pollAddr a new Poll contract address
   function deployPoll(
     uint256 _duration,
     MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
-    PubKey memory _coordinatorPubKey
+    PubKey memory _coordinatorPubKey,
+    Verifier _verifier,
+    VkRegistry _vkRegistry
   ) public onlyOwner returns (address pollAddr) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
@@ -208,7 +214,9 @@ contract MACI is IMACI, Params, Utilities, Ownable {
       _coordinatorPubKey,
       this,
       topupCredit,
-      owner()
+      owner(),
+      _verifier,
+      _vkRegistry
     );
 
     polls[pollId] = p;

@@ -38,25 +38,30 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
 
   Verifier public verifier;
   VkRegistry public vkRegistry;
+  Poll public poll;
+  MessageProcessor public mp;
 
   /// @notice Create a new Subsidy contract
   /// @param _verifier The Verifier contract
   /// @param _vkRegistry The VkRegistry contract
-  constructor(Verifier _verifier, VkRegistry _vkRegistry) payable {
+  /// @param _poll The Poll contract
+  /// @param _mp The MessageProcessor contract
+  constructor(Verifier _verifier, VkRegistry _vkRegistry, Poll _poll, MessageProcessor _mp) payable {
     verifier = _verifier;
     vkRegistry = _vkRegistry;
+    poll = _poll;
+    mp = _mp;
   }
 
   /// @notice Update the currentSbCommitment if the proof is valid.
   /// @dev currentSbCommitment is the commitment to the state and ballot roots
-  /// @param _mp The MessageProcessor contract
-  function updateSbCommitment(MessageProcessor _mp) public onlyOwner {
+  function updateSbCommitment() public onlyOwner {
     // Require that all messages have been processed
-    if (!_mp.processingComplete()) {
+    if (!mp.processingComplete()) {
       revert ProcessingNotComplete();
     }
     if (sbCommitment == 0) {
-      sbCommitment = _mp.sbCommitment();
+      sbCommitment = mp.sbCommitment();
     }
   }
 
@@ -88,20 +93,13 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   }
 
   /// @notice Update the subsidy commitment if the proof is valid
-  /// @param _poll The Poll contract
-  /// @param _mp The MessageProcessor contract
   /// @param _newSubsidyCommitment The new subsidy commitment
   /// @param _proof The proof
-  function updateSubsidy(
-    Poll _poll,
-    MessageProcessor _mp,
-    uint256 _newSubsidyCommitment,
-    uint256[8] calldata _proof
-  ) external onlyOwner {
-    _votingPeriodOver(_poll);
-    updateSbCommitment(_mp);
+  function updateSubsidy(uint256 _newSubsidyCommitment, uint256[8] memory _proof) external onlyOwner {
+    _votingPeriodOver(poll);
+    updateSbCommitment();
 
-    (uint8 intStateTreeDepth, , , ) = _poll.treeDepths();
+    (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
 
     uint256 subsidyBatchSize = uint256(TREE_ARITY) ** intStateTreeDepth;
 
@@ -112,7 +110,7 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
       revert AllSubsidyCalculated();
     }
 
-    bool isValid = verifySubsidyProof(_poll, _proof, numSignUps, _newSubsidyCommitment);
+    bool isValid = verifySubsidyProof(_proof, numSignUps, _newSubsidyCommitment);
     if (!isValid) {
       revert InvalidSubsidyProof();
     }
@@ -136,19 +134,17 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   }
 
   /// @notice Verify the subsidy proof using the Groth16 on chain verifier
-  /// @param _poll The Poll contract
   /// @param _proof The proof
   /// @param _numSignUps The number of signups
   /// @param _newSubsidyCommitment The new subsidy commitment
   /// @return isValid True if the proof is valid
   function verifySubsidyProof(
-    Poll _poll,
-    uint256[8] calldata _proof,
+    uint256[8] memory _proof,
     uint256 _numSignUps,
     uint256 _newSubsidyCommitment
   ) public view returns (bool isValid) {
-    (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll.treeDepths();
-    (IMACI maci, , ) = _poll.extContracts();
+    (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (IMACI maci, , ) = poll.extContracts();
 
     // Get the verifying key
     VerifyingKey memory vk = vkRegistry.getSubsidyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth);
