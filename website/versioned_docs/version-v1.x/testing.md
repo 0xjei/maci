@@ -169,9 +169,9 @@ You can run them with:
 npm run test
 ```
 
-## Pre-Compiled Artifacts for testing
+### Pre-Compiled Artifacts for testing
 
-The followingcompiled circuits and zkeys are available to download:
+The following compiled circuits and zkeys are available to download:
 
 - [Prod](#prod-size) (`7-9-3-4`)
 - [Micro](#micro-size) (`10-2-1-2`)
