@@ -83,7 +83,7 @@ circuits.
 Note the locations of the `.zkey` files as the CLI requires them as
 command-line flags.
 
-For testing purposes you can download the required artifacts using the [`download_zkeys``](https://github.com/privacy-scaling-explorations/maci/blob/dev/integrationTests/scripts/download_zkeys.sh) script inside the `integrationTests/scripts` folder. The script will place all required artifacts inside the `cli/zkeys` folder.
+For testing purposes you can download the required artifacts using the [`download_zkeys`](https://github.com/privacy-scaling-explorations/maci/blob/dev/integrationTests/scripts/download_zkeys.sh) script inside the `integrationTests/scripts` folder. The script will place all required artifacts inside the `cli/zkeys` folder.
 You can run the script directly with bash or use npm: `npm run download-zkeys`.
 
 ### Compile the witness generation binaries (if generating from scratch)
