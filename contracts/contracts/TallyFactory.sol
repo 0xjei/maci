@@ -13,6 +13,11 @@ import { VkRegistry } from "./VkRegistry.sol";
 /// @notice A factory contract which deploys Tally contracts.
 contract TallyFactory is Params, DomainObjs {
   /// @notice Deploy a new Tally contract and return the address.
+  /// @param _verifier Verifier contract
+  /// @param _vkRegistry VkRegistry contract
+  /// @param _poll Poll contract
+  /// @param _messageProcessor MessageProcessor contract
+  /// @return tally The deployed Tally contract
   function deploy(
     Verifier _verifier,
     VkRegistry _vkRegistry,

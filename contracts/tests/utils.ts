@@ -11,11 +11,8 @@ import {
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpGatekeeper,
   deployMaci,
-  deployMessageProcessor,
   deployMockVerifier,
   deployPoseidonContracts,
-  deploySubsidy,
-  deployTally,
   deployTopupCredit,
   deployVkRegistry,
   linkPoseidonLibraries,
@@ -509,7 +506,6 @@ export const deployTestContracts = async (
     gatekeeperContractAddress,
     mockVerifierContractAddress,
     constantIntialVoiceCreditProxyContractAddress,
-    vkRegistryContractAddress,
     topupCreditContractAddress,
   ] = await Promise.all([
     gatekeeperContract.getAddress(),
@@ -519,7 +515,7 @@ export const deployTestContracts = async (
     topupCreditContract.getAddress(),
   ]);
 
-  const { maciContract, stateAqContract, poseidonAddrs } = await deployMaci(
+  const { maciContract, stateAqContract } = await deployMaci(
     gatekeeperContractAddress,
     constantIntialVoiceCreditProxyContractAddress,
     mockVerifierContractAddress,
@@ -527,37 +523,6 @@ export const deployTestContracts = async (
     signer,
     stateTreeDepth,
     quiet,
-  );
-  const mpContract = await deployMessageProcessor(
-    mockVerifierContractAddress,
-    vkRegistryContractAddress,
-    poseidonAddrs[0],
-    poseidonAddrs[1],
-    poseidonAddrs[2],
-    poseidonAddrs[3],
-    signer,
-    true,
-  );
-  const tallyContract = await deployTally(
-    mockVerifierContractAddress,
-    vkRegistryContractAddress,
-    poseidonAddrs[0],
-    poseidonAddrs[1],
-    poseidonAddrs[2],
-    poseidonAddrs[3],
-    signer,
-    true,
-  );
-
-  const subsidyContract = await deploySubsidy(
-    mockVerifierContractAddress,
-    vkRegistryContractAddress,
-    poseidonAddrs[0],
-    poseidonAddrs[1],
-    poseidonAddrs[2],
-    poseidonAddrs[3],
-    signer,
-    true,
   );
 
   return {
@@ -567,9 +532,5 @@ export const deployTestContracts = async (
     maciContract,
     stateAqContract,
     vkRegistryContract,
-    mpContract,
-    tallyContract,
-    subsidyContract,
-    topupCreditContract,
   };
 };

@@ -1,4 +1,4 @@
-import { type Contract, type ContractFactory, type Signer, BaseContract } from "ethers";
+import { type ContractFactory, type Signer, BaseContract } from "ethers";
 // eslint-disable-next-line
 // @ts-ignore typedoc doesn't want to get types from toolbox
 import { ethers } from "hardhat";
@@ -9,17 +9,17 @@ import type {
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
   MACI,
-  MessageProcessor,
   MockVerifier,
   PollFactory,
+  MessageProcessorFactory,
+  SubsidyFactory,
+  TallyFactory,
   PoseidonT3,
   PoseidonT4,
   PoseidonT5,
   PoseidonT6,
   SignUpToken,
   SignUpTokenGatekeeper,
-  Subsidy,
-  Tally,
   TopupCredit,
   Verifier,
   VkRegistry,
@@ -211,148 +211,6 @@ export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
 };
 
 /**
- * Deploy a Poll Factory contract
- * @param signer - the signer object to use to deploy the contract
- * @param quiet - whether to suppress console output
- * @returns the deployed Poll Factory contract
- */
-export const deployPollFactory = async (signer: Signer, quiet = false): Promise<Contract> => {
-  const poseidonContracts = await deployPoseidonContracts(signer, quiet);
-  const [poseidonT3Contract, poseidonT4Contract, poseidonT5Contract, poseidonT6Contract] = await Promise.all([
-    poseidonContracts.PoseidonT3Contract.getAddress(),
-    poseidonContracts.PoseidonT4Contract.getAddress(),
-    poseidonContracts.PoseidonT5Contract.getAddress(),
-    poseidonContracts.PoseidonT6Contract.getAddress(),
-  ]);
-  const contractFactory = await linkPoseidonLibraries(
-    "PollFactory",
-    poseidonT3Contract,
-    poseidonT4Contract,
-    poseidonT5Contract,
-    poseidonT6Contract,
-    signer,
-    quiet,
-  );
-  return deployContractWithLinkedLibraries(contractFactory, "PollFactory", quiet);
-};
-
-/**
- * Deploy a MessageProcessor contract
- * @param verifierAddress - the address of the Verifier contract
- * @param poseidonT3Address - the address of the PoseidonT3 contract
- * @param poseidonT4Address - the address of the PoseidonT4 contract
- * @param poseidonT5Address - the address of the PoseidonT5 contract
- * @param poseidonT6Address - the address of the PoseidonT6 contract
- * @param signer - the signer to use to deploy the contract
- * @param quiet - whether to suppress console output
- * @returns the deployed MessageProcessor contract
- */
-export const deployMessageProcessor = async (
-  verifierAddress: string,
-  vkRegistryAddress: string,
-  poseidonT3Address: string,
-  poseidonT4Address: string,
-  poseidonT5Address: string,
-  poseidonT6Address: string,
-  signer?: Signer,
-  quiet = false,
-): Promise<MessageProcessor> => {
-  // Link Poseidon contracts to MessageProcessor
-  const mpFactory = await linkPoseidonLibraries(
-    "MessageProcessor",
-    poseidonT3Address,
-    poseidonT4Address,
-    poseidonT5Address,
-    poseidonT6Address,
-    signer,
-    quiet,
-  );
-
-  return deployContractWithLinkedLibraries<MessageProcessor>(
-    mpFactory,
-    "MessageProcessor",
-    quiet,
-    verifierAddress,
-    vkRegistryAddress,
-  );
-};
-
-/**
- * Deploy a Tally contract
- * @param verifierAddress - the address of the Verifier contract
- * @param poseidonT3Address - the address of the PoseidonT3 contract
- * @param poseidonT4Address - the address of the PoseidonT4 contract
- * @param poseidonT5Address - the address of the PoseidonT5 contract
- * @param poseidonT6Address - the address of the PoseidonT6 contract
- * @param signer - the signer to use to deploy the contract
- * @param quiet - whether to suppress console output
- * @returns the deployed Tally contract
- */
-export const deployTally = async (
-  verifierAddress: string,
-  vkRegistryAddress: string,
-  poseidonT3Address: string,
-  poseidonT4Address: string,
-  poseidonT5Address: string,
-  poseidonT6Address: string,
-  signer?: Signer,
-  quiet = false,
-): Promise<Tally> => {
-  // Link Poseidon contracts to Tally
-  const tallyFactory = await linkPoseidonLibraries(
-    "Tally",
-    poseidonT3Address,
-    poseidonT4Address,
-    poseidonT5Address,
-    poseidonT6Address,
-    signer,
-    quiet,
-  );
-
-  return deployContractWithLinkedLibraries<Tally>(tallyFactory, "Tally", quiet, verifierAddress, vkRegistryAddress);
-};
-
-/**
- * Depoloy a Subsidy contract
- * @param verifierAddress - the address of the Verifier contract
- * @param poseidonT3Address - the address of the PoseidonT3 contract
- * @param poseidonT4Address - the address of the PoseidonT4 contract
- * @param poseidonT5Address - the address of the PoseidonT5 contract
- * @param poseidonT6Address - the address of the PoseidonT6 contract
- * @param quiet - whether to suppress console output
- * @returns the deployed Subsidy contract
- */
-export const deploySubsidy = async (
-  verifierAddress: string,
-  vkRegistryAddress: string,
-  poseidonT3Address: string,
-  poseidonT4Address: string,
-  poseidonT5Address: string,
-  poseidonT6Address: string,
-  signer?: Signer,
-  quiet = false,
-): Promise<Subsidy> => {
-  // Link Poseidon contracts to Subsidy
-  const subsidyFactory = await linkPoseidonLibraries(
-    "Subsidy",
-    poseidonT3Address,
-    poseidonT4Address,
-    poseidonT5Address,
-    poseidonT6Address,
-    signer,
-    quiet,
-  );
-
-  return deployContractWithLinkedLibraries<Subsidy>(
-    subsidyFactory,
-    "Subsidy",
-    quiet,
-    verifierAddress,
-    vkRegistryAddress,
-  );
-};
-
-/**
  * Deploy a MACI contract
  * @param signUpTokenGatekeeperContractAddress - the address of the SignUpTokenGatekeeper contract
  * @param initialVoiceCreditBalanceAddress - the address of the ConstantInitialVoiceCreditProxy contract
@@ -383,7 +241,7 @@ export const deployMaci = async (
     PoseidonT6Contract.getAddress(),
   ]);
 
-  const contractsToLink = ["MACI", "PollFactory"];
+  const contractsToLink = ["MACI", "PollFactory", "MessageProcessorFactory", "TallyFactory", "SubsidyFactory"];
 
   // Link Poseidon contracts to MACI
   const linkedContractFactories = await Promise.all(
@@ -400,11 +258,30 @@ export const deployMaci = async (
     ),
   );
 
-  const [maciContractFactory, pollFactoryContractFactory] = await Promise.all(linkedContractFactories);
+  const [maciContractFactory, pollFactoryContractFactory, messageProcessorFactory, tallyFactory, subsidyFactory] =
+    await Promise.all(linkedContractFactories);
 
   const pollFactoryContract = await deployContractWithLinkedLibraries<PollFactory>(
     pollFactoryContractFactory,
     "PollFactory",
+    quiet,
+  );
+
+  const messageProcessorFactoryContract = await deployContractWithLinkedLibraries<MessageProcessorFactory>(
+    messageProcessorFactory,
+    "MessageProcessorFactory",
+    quiet,
+  );
+
+  const tallyFactoryContract = await deployContractWithLinkedLibraries<TallyFactory>(
+    tallyFactory,
+    "TallyFactory",
+    quiet,
+  );
+
+  const subsidyFactoryContract = await deployContractWithLinkedLibraries<SubsidyFactory>(
+    subsidyFactory,
+    "SubsidyFactory",
     quiet,
   );
 
@@ -413,6 +290,9 @@ export const deployMaci = async (
     "MACI",
     quiet,
     await pollFactoryContract.getAddress(),
+    await messageProcessorFactoryContract.getAddress(),
+    await tallyFactoryContract.getAddress(),
+    await subsidyFactoryContract.getAddress(),
     signUpTokenGatekeeperContractAddress,
     initialVoiceCreditBalanceAddress,
     topupCreditContractAddress,

@@ -5,7 +5,9 @@ import { Poll } from "./Poll.sol";
 import { PollFactory } from "./PollFactory.sol";
 import { MessageProcessor } from "./MessageProcessor.sol";
 import { MessageProcessorFactory } from "./MessageProcessorFactory.sol";
+import { Tally } from "./Tally.sol";
 import { TallyFactory } from "./TallyFactory.sol";
+import { Subsidy } from "./Subsidy.sol";
 import { SubsidyFactory } from "./SubsidyFactory.sol";
 import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
@@ -82,7 +84,14 @@ contract MACI is IMACI, Params, Utilities, Ownable {
 
   // Events
   event SignUp(uint256 _stateIndex, PubKey _userPubKey, uint256 _voiceCreditBalance, uint256 _timestamp);
-  event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey);
+  event DeployPoll(
+    uint256 _pollId,
+    address _pollAddr,
+    PubKey _pubKey,
+    address _mpAddr,
+    address _tallyAddr,
+    address _subsidyAddr
+  );
 
   /// @notice Only allow a Poll contract to call the modified function.
   modifier onlyPoll(uint256 _pollId) {
@@ -244,15 +253,18 @@ contract MACI is IMACI, Params, Utilities, Ownable {
 
     MessageProcessor mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p);
 
-    tallyFactory.deploy(_verifier, _vkRegistry, p, mp);
+    Tally tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp);
 
-    subsidyFactory.deploy(_verifier, _vkRegistry, p, mp);
+    Subsidy subsidy = subsidyFactory.deploy(_verifier, _vkRegistry, p, mp);
 
     polls[pollId] = p;
 
     pollAddr = address(p);
+    address mpAddr = address(mp);
+    address tallyAddr = address(tally);
+    address subsidyAddr = address(subsidy);
 
-    emit DeployPoll(pollId, pollAddr, _coordinatorPubKey);
+    emit DeployPoll(pollId, pollAddr, _coordinatorPubKey, mpAddr, tallyAddr, subsidyAddr);
   }
 
   /// @notice Allow Poll contracts to merge the state subroots

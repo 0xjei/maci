@@ -3,16 +3,12 @@ import type {
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
   MACI,
-  MessageProcessor,
   MockVerifier,
   PollFactory,
   PoseidonT3,
   PoseidonT4,
   PoseidonT5,
   PoseidonT6,
-  Subsidy,
-  Tally,
-  TopupCredit,
   VkRegistry,
 } from "../typechain-types";
 import type { BigNumberish, Fragment, JsonFragment } from "ethers";
@@ -77,10 +73,6 @@ export interface IDeployedTestContracts {
   maciContract: MACI;
   stateAqContract: AccQueueQuinaryMaci;
   vkRegistryContract: VkRegistry;
-  mpContract: MessageProcessor;
-  tallyContract: Tally;
-  topupCreditContract: TopupCredit;
-  subsidyContract?: Subsidy;
 }
 
 /**

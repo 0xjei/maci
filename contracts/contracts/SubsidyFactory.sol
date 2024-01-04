@@ -13,6 +13,11 @@ import { VkRegistry } from "./VkRegistry.sol";
 /// @notice A factory contract which deploys Subsidy contracts.
 contract SubsidyFactory is Params, DomainObjs {
   /// @notice Deploy a new Subsidy contract and return the address.
+  /// @param _verifier Verifier contract
+  /// @param _vkRegistry VkRegistry contract
+  /// @param _poll Poll contract
+  /// @param _messageProcessor MessageProcessor contract
+  /// @return subsidy The deployed Subsidy contract
   function deploy(
     Verifier _verifier,
     VkRegistry _vkRegistry,

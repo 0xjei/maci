@@ -8,7 +8,7 @@ import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
 import { getDefaultSigner, getSigners } from "../ts/utils";
-import { AccQueue, MACI, Poll as PollContract, TopupCredit } from "../typechain-types";
+import { AccQueue, MACI, Poll as PollContract, TopupCredit, VkRegistry, Verifier } from "../typechain-types";
 
 import {
   MESSAGE_TREE_DEPTH,
@@ -27,6 +27,8 @@ describe("Poll", () => {
   let pollId: number;
   let pollContract: PollContract;
   let topupCreditContract: TopupCredit;
+  let verifierContract: Verifier;
+  let vkRegistryContract: VkRegistry;
   let signer: Signer;
   let deployTime: number;
   const coordinator = new Keypair();
@@ -43,9 +45,18 @@ describe("Poll", () => {
       topupCreditContract = r.topupCreditContract;
 
       // deploy on chain poll
-      const tx = await maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam(), {
-        gasLimit: 8000000,
-      });
+      const tx = await maciContract.deployPoll(
+        duration, 
+        maxValues, 
+        treeDepths, 
+        coordinator.pubKey.asContractParam(),
+        verifierContract,
+        vkRegistryContract,
+        false,
+        {
+          gasLimit: 8000000,
+        },
+      );
       const receipt = await tx.wait();
 
       const block = await signer.provider!.getBlock(receipt!.blockHash);

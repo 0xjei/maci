@@ -12,6 +12,10 @@ import { VkRegistry } from "./VkRegistry.sol";
 /// @notice A factory contract which deploys MessageProcessor contracts.
 contract MessageProcessorFactory is Params, DomainObjs {
   /// @notice Deploy a new MessageProcessor contract and return the address.
+  /// @param _verifier Verifier contract
+  /// @param _vkRegistry VkRegistry contract
+  /// @param _poll Poll contract
+  /// @return messageProcessor The deployed MessageProcessor contract
   function deploy(
     Verifier _verifier,
     VkRegistry _vkRegistry,
