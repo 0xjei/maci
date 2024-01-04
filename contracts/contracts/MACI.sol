@@ -3,6 +3,7 @@ pragma solidity ^0.8.10;
 
 import { Poll } from "./Poll.sol";
 import { PollFactory } from "./PollFactory.sol";
+import { MessageProcessor } from "./MessageProcessor.sol";
 import { MessageProcessorFactory } from "./MessageProcessorFactory.sol";
 import { TallyFactory } from "./TallyFactory.sol";
 import { SubsidyFactory } from "./SubsidyFactory.sol";
@@ -62,12 +63,6 @@ contract MACI is IMACI, Params, Utilities, Ownable {
 
   /// @notice Factory contract that deploy a Subsidy contract
   SubsidyFactory public subsidyFactory;
-
-  /// @notice Verifier contract which is used to deploy other contracts
-  Verifier verifier;
-
-  /// @notice VkRegistry contract which is used to deploy other contracts
-  VkRegistry vkRegistry;
 
   /// @notice The state AccQueue. Represents a mapping between each user's public key
   /// and their voice credit balance.
@@ -141,8 +136,6 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
     stateTreeDepth = _stateTreeDepth;
-    verifier = _verifier;
-    vkRegistry = _vkRegistry;
 
     signUpTimestamp = block.timestamp;
 
@@ -246,20 +239,14 @@ contract MACI is IMACI, Params, Utilities, Ownable {
       _coordinatorPubKey,
       this,
       topupCredit,
-      owner(),
-      _verifier,
-      _vkRegistry
+      owner()
     );
 
-    MessageProcessor mp = IFactory(messageProcessorFactory).deploy({
-      verifier: verifier,
-      vkRegistry: vkRegistry,
-      poll: p
-    });
+    MessageProcessor mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p);
 
-    IFactory(tallyFactory).deploy({ verifier: verifier, vkRegistry: vkRegistry, poll: p, messageProcessor: mp });
+    tallyFactory.deploy(_verifier, _vkRegistry, p, mp);
 
-    IFactory(subsidyFactory).deploy({ verifier: verifier, vkRegistry: vkRegistry, poll: p, messageProcessor: mp });
+    subsidyFactory.deploy(_verifier, _vkRegistry, p, mp);
 
     polls[pollId] = p;
 
