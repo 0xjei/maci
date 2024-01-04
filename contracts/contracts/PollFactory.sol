@@ -32,7 +32,7 @@ contract PollFactory is Params, DomainObjs {
   /// @param _maci The MACI contract interface reference
   /// @param _topupCredit The TopupCredit contract
   /// @param _pollOwner The owner of the poll
-  /// @return poll The deployed Poll contract
+  /// @return pollAddr The deployed Poll contract
   function deploy(
     uint256 _duration,
     MaxValues calldata _maxValues,
@@ -42,7 +42,7 @@ contract PollFactory is Params, DomainObjs {
     IMACI _maci,
     TopupCredit _topupCredit,
     address _pollOwner
-  ) public returns (Poll poll) {
+  ) public returns (address pollAddr) {
     /// @notice Validate _maxValues
     /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
     /// it will be packed as a 50-bit value along with other values as one
@@ -64,7 +64,7 @@ contract PollFactory is Params, DomainObjs {
     ExtContracts memory extContracts = ExtContracts({ maci: _maci, messageAq: messageAq, topupCredit: _topupCredit });
 
     // deploy the poll
-    poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, extContracts);
+    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, extContracts);
 
     // Make the Poll contract own the messageAq contract, so only it can
     // run enqueue/merge
@@ -74,5 +74,7 @@ contract PollFactory is Params, DomainObjs {
     poll.init();
 
     poll.transferOwnership(_pollOwner);
+
+    pollAddr = address(poll);
   }
 }

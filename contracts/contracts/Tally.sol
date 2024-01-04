@@ -4,17 +4,16 @@ pragma solidity ^0.8.10;
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Hasher } from "./crypto/Hasher.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { Poll } from "./Poll.sol";
-import { MessageProcessor } from "./MessageProcessor.sol";
+import { IPoll } from "./interfaces/IPoll.sol";
+import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-import { Verifier } from "./crypto/Verifier.sol";
-import { VkRegistry } from "./VkRegistry.sol";
-import { CommonUtilities } from "./utilities/CommonUtilities.sol";
+import { IVerifier } from "./interfaces/IVerifier.sol";
+import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 
 /// @title Tally
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
-contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
+contract Tally is Ownable, SnarkCommon, Hasher {
   // custom errors
   error ProcessingNotComplete();
   error InvalidTallyVotesProof();
@@ -44,21 +43,21 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   // The final commitment to the state and ballot roots
   uint256 public sbCommitment;
 
-  Verifier public verifier;
-  VkRegistry public vkRegistry;
-  Poll public poll;
-  MessageProcessor public mp;
+  IVerifier public verifier;
+  IVkRegistry public vkRegistry;
+  IPoll public poll;
+  IMessageProcessor public mp;
 
   /// @notice Create a new Tally contract
   /// @param _verifier The Verifier contract
   /// @param _vkRegistry The VkRegistry contract
   /// @param _poll The Poll contract
   /// @param _mp The MessageProcessor contract
-  constructor(Verifier _verifier, VkRegistry _vkRegistry, Poll _poll, MessageProcessor _mp) payable {
-    verifier = _verifier;
-    vkRegistry = _vkRegistry;
-    poll = _poll;
-    mp = _mp;
+  constructor(address _verifier, address _vkRegistry, address _poll, address _mp) payable {
+    verifier = IVerifier(_verifier);
+    vkRegistry = IVkRegistry(_vkRegistry);
+    poll = IPoll(_poll);
+    mp = IMessageProcessor(_mp);
   }
 
   /// @notice Pack the batch start index and number of signups into a 100-bit value.
@@ -114,7 +113,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @param _newTallyCommitment the new tally commitment to be verified
   /// @param _proof the proof generated after tallying this batch
   function tallyVotes(uint256 _newTallyCommitment, uint256[8] memory _proof) public onlyOwner {
-    _votingPeriodOver(poll);
+    // _votingPeriodOver(poll);
     updateSbCommitment();
 
     (, uint256 tallyBatchSize, ) = poll.batchSizes();

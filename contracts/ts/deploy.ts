@@ -211,6 +211,32 @@ export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
 };
 
 /**
+ * Deploy a Poll Factory contract
+ * @param signer - the signer object to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed Poll Factory contract
+ */
+export const deployPollFactory = async (signer: Signer, quiet = false): Promise<PollFactory> => {
+  const poseidonContracts = await deployPoseidonContracts(signer, quiet);
+  const [poseidonT3Contract, poseidonT4Contract, poseidonT5Contract, poseidonT6Contract] = await Promise.all([
+    poseidonContracts.PoseidonT3Contract.getAddress(),
+    poseidonContracts.PoseidonT4Contract.getAddress(),
+    poseidonContracts.PoseidonT5Contract.getAddress(),
+    poseidonContracts.PoseidonT6Contract.getAddress(),
+  ]);
+  const contractFactory = await linkPoseidonLibraries(
+    "PollFactory",
+    poseidonT3Contract,
+    poseidonT4Contract,
+    poseidonT5Contract,
+    poseidonT6Contract,
+    signer,
+    quiet,
+  );
+  return deployContractWithLinkedLibraries(contractFactory, "PollFactory", quiet);
+};
+
+/**
  * Deploy a MACI contract
  * @param signUpTokenGatekeeperContractAddress - the address of the SignUpTokenGatekeeper contract
  * @param initialVoiceCreditBalanceAddress - the address of the ConstantInitialVoiceCreditProxy contract

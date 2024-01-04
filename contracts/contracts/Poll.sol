@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { Params } from "./utilities/Params.sol";
-import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+import { Params } from "./utilities/Params.sol";
+import { SnarkCommon } from "./crypto/SnarkCommon.sol";
+import { DomainObjs } from "./utilities/DomainObjs.sol";
+import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 

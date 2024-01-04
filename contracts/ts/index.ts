@@ -11,6 +11,7 @@ export {
   linkPoseidonLibraries,
   deployPoseidonContracts,
   deployVerifier,
+  deployPollFactory,
 } from "./deploy";
 export { genJsonRpcDeployer } from "./deployer";
 export { genMaciStateFromContract } from "./genMaciState";

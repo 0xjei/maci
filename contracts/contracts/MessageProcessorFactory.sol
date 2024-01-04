@@ -4,9 +4,6 @@ pragma solidity ^0.8.10;
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { MessageProcessor } from "./MessageProcessor.sol";
-import { Poll } from "./Poll.sol";
-import { Verifier } from "./crypto/Verifier.sol";
-import { VkRegistry } from "./VkRegistry.sol";
 
 /// @title MessageProcessorFactory
 /// @notice A factory contract which deploys MessageProcessor contracts.
@@ -15,15 +12,17 @@ contract MessageProcessorFactory is Params, DomainObjs {
   /// @param _verifier Verifier contract
   /// @param _vkRegistry VkRegistry contract
   /// @param _poll Poll contract
-  /// @return messageProcessor The deployed MessageProcessor contract
+  /// @param _owner Owner of the MessageProcessor contract
+  /// @return messageProcessorAddr The deployed MessageProcessor contract
   function deploy(
-    Verifier _verifier,
-    VkRegistry _vkRegistry,
-    Poll _poll
-  ) public returns (MessageProcessor messageProcessor) {
+    address _verifier,
+    address _vkRegistry,
+    address _poll,
+    address _owner
+  ) public returns (address messageProcessorAddr) {
     /// @notice deploy MessageProcessor for this Poll
-    messageProcessor = new MessageProcessor(_verifier, _vkRegistry, _poll);
-
-    return messageProcessor;
+    MessageProcessor messageProcessor = new MessageProcessor(_verifier, _vkRegistry, _poll);
+    messageProcessor.transferOwnership(_owner);
+    messageProcessorAddr = address(messageProcessor);
   }
 }

@@ -2,25 +2,21 @@
 pragma solidity ^0.8.10;
 
 import { IMACI } from "./interfaces/IMACI.sol";
-import { MessageProcessor } from "./MessageProcessor.sol";
+import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { Poll } from "./Poll.sol";
+import { IPoll } from "./interfaces/IPoll.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Hasher } from "./crypto/Hasher.sol";
-import { CommonUtilities } from "./utilities/CommonUtilities.sol";
-import { Verifier } from "./crypto/Verifier.sol";
-import { VkRegistry } from "./VkRegistry.sol";
+import { IVerifier } from "./interfaces/IVerifier.sol";
+import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 
 /// @title Subsidy
 /// @notice This contract is used to verify that the subsidy calculations
 /// are correct. It is also used to update the subsidy commitment if the
 /// proof is valid.
-contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
-  // row batch index
-  uint256 public rbi;
-  // column batch index
-  uint256 public cbi;
-
+contract Subsidy is Ownable, Hasher, SnarkCommon {
+  uint256 public rbi; // row batch index
+  uint256 public cbi; // column batch index
   // The final commitment to the state and ballot roots
   uint256 public sbCommitment;
   uint256 public subsidyCommitment;
@@ -36,21 +32,21 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   error RbiTooLarge();
   error CbiTooLarge();
 
-  Verifier public verifier;
-  VkRegistry public vkRegistry;
-  Poll public poll;
-  MessageProcessor public mp;
+  IVerifier public verifier;
+  IVkRegistry public vkRegistry;
+  IPoll public poll;
+  IMessageProcessor public mp;
 
   /// @notice Create a new Subsidy contract
   /// @param _verifier The Verifier contract
   /// @param _vkRegistry The VkRegistry contract
   /// @param _poll The Poll contract
   /// @param _mp The MessageProcessor contract
-  constructor(Verifier _verifier, VkRegistry _vkRegistry, Poll _poll, MessageProcessor _mp) payable {
-    verifier = _verifier;
-    vkRegistry = _vkRegistry;
-    poll = _poll;
-    mp = _mp;
+  constructor(address _verifier, address _vkRegistry, address _poll, address _mp) payable {
+    verifier = IVerifier(_verifier);
+    vkRegistry = IVkRegistry(_vkRegistry);
+    poll = IPoll(_poll);
+    mp = IMessageProcessor(_mp);
   }
 
   /// @notice Update the currentSbCommitment if the proof is valid.
@@ -96,14 +92,14 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   /// @param _newSubsidyCommitment The new subsidy commitment
   /// @param _proof The proof
   function updateSubsidy(uint256 _newSubsidyCommitment, uint256[8] memory _proof) external onlyOwner {
-    _votingPeriodOver(poll);
+    // _votingPeriodOver(poll);
     updateSbCommitment();
 
     (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
 
     uint256 subsidyBatchSize = uint256(TREE_ARITY) ** intStateTreeDepth;
 
-    (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are unfinished ballots left
     if (rbi * subsidyBatchSize > numSignUps) {
