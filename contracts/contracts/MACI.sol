@@ -3,6 +3,9 @@ pragma solidity ^0.8.10;
 
 import { Poll } from "./Poll.sol";
 import { PollFactory } from "./PollFactory.sol";
+import { MessageProcessorFactory } from "./MessageProcessorFactory.sol";
+import { TallyFactory } from "./TallyFactory.sol";
+import { SubsidyFactory } from "./SubsidyFactory.sol";
 import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { AccQueue } from "./trees/AccQueue.sol";
@@ -45,10 +48,26 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @notice A mapping of block timestamps to the number of state leaves
   mapping(uint256 => uint256) public numStateLeaves;
 
-  // ERC20 contract that hold topup credits
+  /// @notice ERC20 contract that hold topup credits
   TopupCredit public topupCredit;
 
+  /// @notice Factory contract that deploy a Poll contract
   PollFactory public pollFactory;
+
+  /// @notice Factory contract that deploy a MessageProcessor contract
+  MessageProcessorFactory public messageProcessorFactory;
+
+  /// @notice Factory contract that deploy a Tally contract
+  TallyFactory public tallyFactory;
+
+  /// @notice Factory contract that deploy a Subsidy contract
+  SubsidyFactory public subsidyFactory;
+
+  /// @notice Verifier contract which is used to deploy other contracts
+  Verifier verifier;
+
+  /// @notice VkRegistry contract which is used to deploy other contracts
+  VkRegistry vkRegistry;
 
   /// @notice The state AccQueue. Represents a mapping between each user's public key
   /// and their voice credit balance.
@@ -86,15 +105,23 @@ contract MACI is IMACI, Params, Utilities, Ownable {
 
   /// @notice Create a new instance of the MACI contract.
   /// @param _pollFactory The PollFactory contract
+  /// @param _messageProcessorFactory The MessageProcessorFactory contract
+  /// @param _tallyFactory The TallyFactory contract
+  /// @param _subsidyFactory The SubsidyFactory contract
   /// @param _signUpGatekeeper The SignUpGatekeeper contract
   /// @param _initialVoiceCreditProxy The InitialVoiceCreditProxy contract
   /// @param _stateTreeDepth The depth of the state tree
   constructor(
     PollFactory _pollFactory,
+    MessageProcessorFactory _messageProcessorFactory,
+    TallyFactory _tallyFactory,
+    SubsidyFactory _subsidyFactory,
     SignUpGatekeeper _signUpGatekeeper,
     InitialVoiceCreditProxy _initialVoiceCreditProxy,
     TopupCredit _topupCredit,
-    uint8 _stateTreeDepth
+    uint8 _stateTreeDepth,
+    Verifier _verifier,
+    VkRegistry _vkRegistry
   ) payable {
     // Deploy the state AccQueue
     stateAq = new AccQueueQuinaryBlankSl(STATE_TREE_SUBDEPTH);
@@ -107,10 +134,15 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     }
 
     pollFactory = _pollFactory;
+    messageProcessorFactory = _messageProcessorFactory;
+    tallyFactory = _tallyFactory;
+    subsidyFactory = _subsidyFactory;
     topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
-    STATE_TREE_DEPTH = _stateTreeDepth;
+    stateTreeDepth = _stateTreeDepth;
+    verifier = _verifier;
+    vkRegistry = _vkRegistry;
 
     signUpTimestamp = block.timestamp;
 
@@ -218,6 +250,16 @@ contract MACI is IMACI, Params, Utilities, Ownable {
       _verifier,
       _vkRegistry
     );
+
+    MessageProcessor mp = IFactory(messageProcessorFactory).deploy({
+      verifier: verifier,
+      vkRegistry: vkRegistry,
+      poll: p
+    });
+
+    IFactory(tallyFactory).deploy({ verifier: verifier, vkRegistry: vkRegistry, poll: p, messageProcessor: mp });
+
+    IFactory(subsidyFactory).deploy({ verifier: verifier, vkRegistry: vkRegistry, poll: p, messageProcessor: mp });
 
     polls[pollId] = p;
 
