@@ -7,6 +7,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Hasher } from "./crypto/Hasher.sol";
+import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 
@@ -14,7 +15,7 @@ import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 /// @notice This contract is used to verify that the subsidy calculations
 /// are correct. It is also used to update the subsidy commitment if the
 /// proof is valid.
-contract Subsidy is Ownable, Hasher, SnarkCommon {
+contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   uint256 public rbi; // row batch index
   uint256 public cbi; // column batch index
   // The final commitment to the state and ballot roots

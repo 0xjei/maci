@@ -56,7 +56,7 @@ describe("TallyVotes", () => {
 
     const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
-    verifierContract = r.mockVerifierContract;
+    verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
 
     // deploy a poll
@@ -73,7 +73,7 @@ describe("TallyVotes", () => {
         gasLimit: 8000000,
       },
     );
-    let receipt = await tx.wait();
+    const receipt = await tx.wait();
 
     const block = await signer.provider!.getBlock(receipt!.blockHash);
     const deployTime = block!.timestamp;

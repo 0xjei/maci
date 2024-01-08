@@ -9,11 +9,12 @@ import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
+import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 
 /// @title Tally
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
-contract Tally is Ownable, SnarkCommon, Hasher {
+contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   // custom errors
   error ProcessingNotComplete();
   error InvalidTallyVotesProof();

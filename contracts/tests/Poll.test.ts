@@ -42,13 +42,14 @@ describe("Poll", () => {
       signer = await getDefaultSigner();
       const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
       maciContract = r.maciContract;
-      topupCreditContract = r.topupCreditContract;
+      verifierContract = r.mockVerifierContract as Verifier;
+      vkRegistryContract = r.vkRegistryContract;
 
       // deploy on chain poll
       const tx = await maciContract.deployPoll(
-        duration, 
-        maxValues, 
-        treeDepths, 
+        duration,
+        maxValues,
+        treeDepths,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,

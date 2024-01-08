@@ -11,6 +11,7 @@ contract SubsidyFactory {
   /// @param _vkRegistry VkRegistry contract
   /// @param _poll Poll contract
   /// @param _messageProcessor MessageProcessor contract
+  /// @param _owner Owner of the Subsidy contract
   /// @return subsidyAddr The deployed Subsidy contract
   function deploy(
     address _verifier,
@@ -19,7 +20,7 @@ contract SubsidyFactory {
     address _messageProcessor,
     address _owner
   ) public returns (address subsidyAddr) {
-    /// @notice deploy Tally for this Poll
+    /// @notice deploy Subsidy for this Poll
     Subsidy subsidy = new Subsidy(_verifier, _vkRegistry, _poll, _messageProcessor);
     subsidy.transferOwnership(_owner);
     subsidyAddr = address(subsidy);
