@@ -321,7 +321,7 @@ This contract is used to prepare parameters for the zk-SNARK circuits as well as
 This is a simple factory contract which allows to deploy new `AccQueueQuinaryMaci` contracts. It exposes one function, `deploy`, which can only be called by the contract owner. After deployment of the contract, it will transfer its ownership to the same owner as the factory contract.
 
 ```javascript
-contract MessageAqFactory is Ownable {
+contract MessageAqFactory is Ownable(msg.sender) {
     function deploy(uint256 _subDepth) public onlyOwner returns (AccQueue) {
         AccQueue aq = new AccQueueQuinaryMaci(_subDepth);
         aq.transferOwnership(owner());
