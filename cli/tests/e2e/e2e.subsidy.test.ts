@@ -52,6 +52,8 @@ describe("e2e with Subsidy tests", function test() {
   let pollAddresses: PollContracts;
   let vkRegistryContractAddress: string;
 
+  const deploySubsidy = true;
+
   before(async () => {
     // we deploy the vk registry contract
     vkRegistryContractAddress = await deployVkRegistryContract(true);
@@ -89,6 +91,7 @@ describe("e2e with Subsidy tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -193,9 +196,10 @@ describe("e2e with Subsidy tests", function test() {
         testSubsidyWasmPath,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
       await verify(
         "0",
+        deploySubsidy,
         testTallyFilePath,
         tallyData,
         maciAddresses.maciAddress,
@@ -236,6 +240,7 @@ describe("e2e with Subsidy tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -285,9 +290,10 @@ describe("e2e with Subsidy tests", function test() {
         testSubsidyWasmPath,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
       await verify(
         "0",
+        deploySubsidy,
         testTallyFilePath,
         tallyData,
         maciAddresses.maciAddress,
@@ -318,6 +324,7 @@ describe("e2e with Subsidy tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -369,9 +376,10 @@ describe("e2e with Subsidy tests", function test() {
         testSubsidyWasmPath,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
       await verify(
         "0",
+        deploySubsidy,
         testTallyFilePath,
         tallyData,
         maciAddresses.maciAddress,
@@ -415,6 +423,7 @@ describe("e2e with Subsidy tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
       // signup
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -459,9 +468,10 @@ describe("e2e with Subsidy tests", function test() {
         testSubsidyWasmPath,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
       await verify(
         "0",
+        deploySubsidy,
         testTallyFilePath,
         tallyData,
         maciAddresses.maciAddress,
@@ -483,6 +493,7 @@ describe("e2e with Subsidy tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
       secondPollAddresses = await deployPoll(
         pollDuration,
@@ -493,6 +504,7 @@ describe("e2e with Subsidy tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -597,6 +609,7 @@ describe("e2e with Subsidy tests", function test() {
       await proveOnChain(
         "1",
         testProofsDirPath,
+        deploySubsidy,
         maciAddresses.maciAddress,
         pollAddresses.messageProcessor,
         pollAddresses.tally,
@@ -604,6 +617,7 @@ describe("e2e with Subsidy tests", function test() {
       );
       await verify(
         "1",
+        deploySubsidy,
         testTallyFilePath,
         tallyData,
         maciAddresses.maciAddress,
@@ -640,6 +654,7 @@ describe("e2e with Subsidy tests", function test() {
       await proveOnChain(
         "2",
         testProofsDirPath,
+        deploySubsidy,
         maciAddresses.maciAddress,
         secondPollAddresses.messageProcessor,
         secondPollAddresses.tally,
@@ -647,6 +662,7 @@ describe("e2e with Subsidy tests", function test() {
       );
       await verify(
         "2",
+        deploySubsidy,
         testTallyFilePath,
         tallyData,
         maciAddresses.maciAddress,

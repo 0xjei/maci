@@ -51,7 +51,7 @@ describe("MessageProcessor", () => {
     const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
     signer = await getDefaultSigner();
-    verifierContract = r.mockVerifierContract;
+    verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
 
     // deploy on chain poll
@@ -149,9 +149,7 @@ describe("MessageProcessor", () => {
         0,
         poll.messages.length,
       );
-      const onChainPackedVals = BigInt(
-        await mpContract.genProcessMessagesPackedVals(0, users.length),
-      );
+      const onChainPackedVals = BigInt(await mpContract.genProcessMessagesPackedVals(0, users.length));
       expect(packedVals.toString()).to.eq(onChainPackedVals.toString());
     });
 

@@ -12,6 +12,7 @@ import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verif
 /**
  * Verify the results of a poll and optionally the subsidy results
  * @param pollId - the id of the poll
+ * @param deploySubsidy - whether the subsidy contract deployed
  * @param tallyFile - the path to the tally file
  * @param maciAddress - the address of the MACI contract
  * @param tallyAddress - the address of the Tally contract
@@ -21,6 +22,7 @@ import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verif
  */
 export const verify = async (
   pollId: string,
+  deploySubsidy: boolean,
   tallyFile?: string,
   tallyData?: TallyData,
   maciAddress?: string,
@@ -41,13 +43,16 @@ export const verify = async (
     logError("Tally contract address is empty");
   }
 
-  if (!readContractAddress(`Subsidy-${pollId}`) && !subsidyAddress) {
+  if (deploySubsidy && !readContractAddress(`Subsidy-${pollId}`) && !subsidyAddress) {
     logError("Subsidy contract address is empty");
   }
 
   const maciContractAddress = maciAddress || readContractAddress("MACI");
   const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`);
-  const subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`);
+  let subsidyContractAddress = "";
+  if (deploySubsidy) {
+    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`);
+  }
 
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError(`Error: there is no contract deployed at ${maciContractAddress}.`);
@@ -57,7 +62,7 @@ export const verify = async (
     logError(`Error: there is no contract deployed at ${tallyContractAddress}.`);
   }
 
-  if (!(await contractExists(signer.provider!, subsidyContractAddress))) {
+  if (deploySubsidy && !(await contractExists(signer.provider!, subsidyContractAddress))) {
     logError(`Error: there is no contract deployed at ${subsidyContractAddress}.`);
   }
 
@@ -68,7 +73,9 @@ export const verify = async (
 
   const tallyContract = new BaseContract(tallyContractAddress, parseArtifact("Tally")[0], signer) as Tally;
 
-  const subsidyContract = new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], signer) as Subsidy;
+  const subsidyContract = deploySubsidy
+    ? (new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], signer) as Subsidy)
+    : undefined;
 
   // verification
   const onChainTallycomment = BigInt(await tallyContract.tallyCommitment());
@@ -197,7 +204,7 @@ export const verify = async (
   }
 
   // verify subsidy result if subsidy file is provided
-  if (subsidyFile) {
+  if (deploySubsidy && subsidyFile && subsidyContract !== undefined) {
     const onChainSubsidyCommitment = BigInt(await subsidyContract.subsidyCommitment());
 
     logYellow(quiet, info(`on-chain subsidy commitment: ${onChainSubsidyCommitment.toString(16)}`));

@@ -44,7 +44,7 @@ describe("MACI", () => {
       maciContract = r.maciContract;
       stateAqContract = r.stateAqContract;
       vkRegistryContract = r.vkRegistryContract;
-      verifierContract = r.mockVerifierContract;
+      verifierContract = r.mockVerifierContract as Verifier;
     });
 
     it("should have set the correct stateTreeDepth", async () => {

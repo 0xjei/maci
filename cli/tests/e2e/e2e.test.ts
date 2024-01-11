@@ -86,6 +86,7 @@ describe("e2e tests", function test() {
     });
 
     const user = new Keypair();
+    const deploySubsidy = true;
 
     before(async () => {
       // deploy the smart contracts
@@ -100,6 +101,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -145,9 +147,10 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
       await verify(
         "0",
+        deploySubsidy,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
@@ -163,6 +166,7 @@ describe("e2e tests", function test() {
     });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
+    const deploySubsidy = true;
 
     before(async () => {
       // deploy the smart contracts
@@ -177,6 +181,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -259,9 +264,10 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
       await verify(
         "0",
+        deploySubsidy,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
@@ -277,6 +283,7 @@ describe("e2e tests", function test() {
     });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
+    const deploySubsidy = true;
 
     before(async () => {
       // deploy the smart contracts
@@ -291,6 +298,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -395,9 +403,10 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
       await verify(
         "0",
+        deploySubsidy,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
@@ -423,6 +432,7 @@ describe("e2e tests", function test() {
       new Keypair(),
       new Keypair(),
     ];
+    const deploySubsidy = true;
 
     before(async () => {
       // deploy the smart contracts
@@ -437,6 +447,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -486,9 +497,10 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
       await verify(
         "0",
+        deploySubsidy,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
@@ -504,6 +516,7 @@ describe("e2e tests", function test() {
     });
 
     const user = new Keypair();
+    const deploySubsidy = true;
 
     before(async () => {
       // deploy the smart contracts
@@ -518,6 +531,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -569,9 +583,10 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
       await verify(
         "0",
+        deploySubsidy,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
@@ -605,6 +620,7 @@ describe("e2e tests", function test() {
     });
 
     const user = new Keypair();
+    const deploySubsidy = false;
 
     before(async () => {
       // deploy the smart contracts
@@ -619,6 +635,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
       // signup
       await signup(user.pubKey.serialize());
@@ -659,8 +676,8 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, tallyFileData);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
+      await verify("0", deploySubsidy, testTallyFilePath, tallyFileData);
       cleanVanilla();
     });
 
@@ -674,6 +691,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
     it("should publish a new message", async () => {
@@ -713,8 +731,8 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("1", testProofsDirPath);
-      await verify("1", testTallyFilePath);
+      await proveOnChain("1", testProofsDirPath, deploySubsidy);
+      await verify("1", deploySubsidy, testTallyFilePath);
     });
   });
 
@@ -730,6 +748,7 @@ describe("e2e tests", function test() {
     ];
 
     let secondPollAddresses: PollContracts;
+    const deploySubsidy = false;
 
     after(() => {
       cleanVanilla();
@@ -751,6 +770,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
 
       // signup
@@ -797,8 +817,8 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, tallyFileData);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
+      await verify("0", deploySubsidy, testTallyFilePath, tallyFileData);
       cleanVanilla();
     });
 
@@ -813,6 +833,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
       secondPollAddresses = await deployPoll(
         pollDuration,
@@ -823,6 +844,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -927,11 +949,12 @@ describe("e2e tests", function test() {
       await proveOnChain(
         "1",
         testProofsDirPath,
+        deploySubsidy,
         maciAddresses.maciAddress,
         pollAddresses.messageProcessor,
         pollAddresses.tally,
       );
-      await verify("1", testTallyFilePath, tallyData, maciAddresses.maciAddress, pollAddresses.tally);
+      await verify("1", deploySubsidy, testTallyFilePath, tallyData, maciAddresses.maciAddress, pollAddresses.tally);
       cleanVanilla();
     });
 
@@ -961,11 +984,19 @@ describe("e2e tests", function test() {
       await proveOnChain(
         "2",
         testProofsDirPath,
+        deploySubsidy,
         maciAddresses.maciAddress,
         secondPollAddresses.messageProcessor,
         secondPollAddresses.tally,
       );
-      await verify("2", testTallyFilePath, tallyData, maciAddresses.maciAddress, secondPollAddresses.tally);
+      await verify(
+        "2",
+        deploySubsidy,
+        testTallyFilePath,
+        tallyData,
+        maciAddresses.maciAddress,
+        secondPollAddresses.tally,
+      );
     });
   });
 
@@ -973,6 +1004,7 @@ describe("e2e tests", function test() {
     const stateOutPath = "./state.json";
 
     const user = new Keypair();
+    const deploySubsidy = false;
 
     after(() => {
       cleanVanilla();
@@ -995,6 +1027,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -1051,8 +1084,8 @@ describe("e2e tests", function test() {
         useWasm,
         stateOutPath,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
+      await verify("0", deploySubsidy, testTallyFilePath);
     });
   });
 
@@ -1060,6 +1093,7 @@ describe("e2e tests", function test() {
     const user = new Keypair();
     const tokenAmount = 100;
     let stateIndex: number | undefined;
+    const deploySubsidy = false;
 
     after(() => {
       cleanVanilla();
@@ -1078,6 +1112,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        deploySubsidy,
       );
     });
 
@@ -1131,8 +1166,8 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath);
+      await proveOnChain("0", testProofsDirPath, deploySubsidy);
+      await verify("0", deploySubsidy, testTallyFilePath);
     });
   });
 });

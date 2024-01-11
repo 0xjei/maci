@@ -8,7 +8,8 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
-import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
+import { AccQueue } from "./trees/AccQueue.sol";
+import { AccQueueQuinaryMaci } from "./trees/AccQueueQuinaryMaci.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 

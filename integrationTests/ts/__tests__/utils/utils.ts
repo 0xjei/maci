@@ -3,12 +3,13 @@ import { expect } from "chai";
 import { Signer } from "ethers";
 import {
   FreeForAllGatekeeper,
-  MACI,
+  Verifier,
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpGatekeeper,
   deployMaci,
   deployMockVerifier,
   deployTopupCredit,
+  deployVkRegistry,
 } from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
 
@@ -17,7 +18,7 @@ import { arch } from "os";
 import type { TallyData } from "maci-cli";
 
 import { defaultVote } from "./constants";
-import { Subsidy, IVote, IBriber } from "./interfaces";
+import { Subsidy, IVote, IBriber, IDeployedTestContracts } from "./interfaces";
 import { UserCommand } from "./user";
 
 /**
@@ -192,7 +193,7 @@ export const deployTestContracts = async (
   signer?: Signer,
   quiet = false,
   gatekeeper: FreeForAllGatekeeper | undefined = undefined,
-): Promise<MACI> => {
+): Promise<IDeployedTestContracts> => {
   const mockVerifierContract = await deployMockVerifier(signer, true);
 
   let gatekeeperContract = gatekeeper;
@@ -207,6 +208,7 @@ export const deployTestContracts = async (
   );
 
   // VkRegistry
+  const vkRegistryContract = await deployVkRegistry(signer, true);
   const topupCreditContract = await deployTopupCredit(signer, true);
   const [
     gatekeeperContractAddress,
@@ -230,5 +232,5 @@ export const deployTestContracts = async (
     quiet,
   );
 
-  return maciContract;
+  return { maci: maciContract, verifier: mockVerifierContract as Verifier, vkRegistry: vkRegistryContract };
 };

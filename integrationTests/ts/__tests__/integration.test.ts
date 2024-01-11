@@ -62,6 +62,7 @@ describe("integration tests", function test() {
   let pollContracts: PollContracts;
   let pollId: number;
   const coordinatorKeypair = new Keypair();
+  const deploySubsidy = true;
 
   // the code that we run before all tests
   before(async () => {
@@ -100,6 +101,7 @@ describe("integration tests", function test() {
       MSG_TREE_DEPTH,
       VOTE_OPTION_TREE_DEPTH,
       coordinatorKeypair.pubKey.serialize(),
+      deploySubsidy,
       contracts.maciAddress,
     );
 
@@ -287,6 +289,7 @@ describe("integration tests", function test() {
         proveOnChain(
           pollId.toString(),
           path.resolve(__dirname, "../../../cli/proofs"),
+          subsidyEnabled,
           contracts.maciAddress,
           pollContracts.messageProcessor,
           pollContracts.tally,
@@ -299,6 +302,7 @@ describe("integration tests", function test() {
       await expect(
         verify(
           pollId.toString(),
+          subsidyEnabled,
           path.resolve(__dirname, "../../../cli/tally.json"),
           tallyData,
           contracts.maciAddress,

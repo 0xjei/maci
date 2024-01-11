@@ -39,6 +39,7 @@ import { Proof } from "../utils/interfaces";
  * Command to prove the result of a poll on-chain
  * @param pollId - the id of the poll
  * @param proofDir - the directory containing the proofs
+ * @param deploySubsidy - whether the subsidy contract deployed
  * @param maciAddress - the address of the MACI contract
  * @param messageProcessorAddress - the address of the MessageProcessor contract
  * @param tallyAddress - the address of the Tally contract
@@ -48,6 +49,7 @@ import { Proof } from "../utils/interfaces";
 export const proveOnChain = async (
   pollId: string,
   proofDir: string,
+  deploySubsidy: boolean,
   maciAddress?: string,
   messageProcessorAddress?: string,
   tallyAddress?: string,
@@ -67,7 +69,7 @@ export const proveOnChain = async (
   if (!readContractAddress(`Tally-${pollId}`) && !tallyAddress) {
     logError("Tally contract address is empty");
   }
-  if (!readContractAddress(`Subsidy-${pollId}`) && !subsidyAddress) {
+  if (deploySubsidy && !readContractAddress(`Subsidy-${pollId}`) && !subsidyAddress) {
     logError("Subsidy contract address is empty");
   }
 
@@ -90,7 +92,7 @@ export const proveOnChain = async (
     logError("Tally contract does not exist");
   }
 
-  if (!(await contractExists(signer.provider!, subsidyContractAddress))) {
+  if (deploySubsidy && !(await contractExists(signer.provider!, subsidyContractAddress))) {
     logError("Subsidy contract does not exist");
   }
 
@@ -146,11 +148,6 @@ export const proveOnChain = async (
 
   const verifierContract = new BaseContract(verifierContractAddress, parseArtifact("Verifier")[0], signer) as Verifier;
 
-  const [pollContractAddress, mpContractAddress] = await Promise.all([
-    pollContract.getAddress(),
-    mpContract.getAddress(),
-  ]);
-
   const data = {
     processProofs: [] as Proof[],
     tallyProofs: [] as Proof[],
@@ -178,9 +175,11 @@ export const proveOnChain = async (
       return;
     }
 
-    match = filename.match(/subsidy_(\d+)/);
-    if (match) {
-      data.subsidyProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString()) as Proof;
+    if (deploySubsidy) {
+      match = filename.match(/subsidy_(\d+)/);
+      if (match) {
+        data.subsidyProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString()) as Proof;
+      }
     }
   });
 
@@ -287,7 +286,7 @@ export const proveOnChain = async (
     }
 
     const packedValsOnChain = BigInt(
-      await mpContract.genProcessMessagesPackedVals(pollContractAddress, currentMessageBatchIndex, numSignUps),
+      await mpContract.genProcessMessagesPackedVals(currentMessageBatchIndex, numSignUps),
     ).toString();
 
     if (circuitInputs.packedVals !== packedValsOnChain) {
@@ -298,7 +297,6 @@ export const proveOnChain = async (
 
     const publicInputHashOnChain = BigInt(
       await mpContract.genProcessMessagesPublicInputHash(
-        pollContractAddress,
         currentMessageBatchIndex,
         messageRootOnChain.toString(),
         numSignUps,
@@ -335,7 +333,6 @@ export const proveOnChain = async (
       // validate process messaging proof and store the new state and ballot root commitment
 
       const tx = await mpContract.processMessages(
-        pollContractAddress,
         asHex(circuitInputs.newSbCommitment as BigNumberish),
         formattedProof,
       );
@@ -362,7 +359,7 @@ export const proveOnChain = async (
   }
 
   // subsidy calculations if any subsidy proofs are provided
-  if (Object.keys(data.subsidyProofs).length !== 0) {
+  if (deploySubsidy && Object.keys(data.subsidyProofs).length !== 0) {
     let rbi = Number(await subsidyContract.rbi());
     let cbi = Number(await subsidyContract.cbi());
     const num1DBatches = Math.ceil(numSignUps / subsidyBatchSize);
@@ -374,7 +371,7 @@ export const proveOnChain = async (
     // process all batches
     for (let i = subsidyBatchNum; i < totalBatchNum; i += 1) {
       if (i === 0) {
-        await subsidyContract.updateSbCommitment(mpContractAddress);
+        await subsidyContract.updateSbCommitment();
       }
 
       const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i];
@@ -416,8 +413,6 @@ export const proveOnChain = async (
         // verify the proof on chain and set the new subsidy commitment
 
         const tx = await subsidyContract.updateSubsidy(
-          pollContractAddress,
-          mpContractAddress,
           circuitInputs.newSubsidyCommitment as BigNumberish,
           formattedProof,
         );
@@ -463,7 +458,7 @@ export const proveOnChain = async (
 
   for (let i = tallyBatchNum; i < totalTallyBatches; i += 1) {
     if (i === 0) {
-      await tallyContract.updateSbCommitment(mpContractAddress);
+      await tallyContract.updateSbCommitment();
     }
 
     const batchStartIndex = i * tallyBatchSize;
@@ -508,8 +503,6 @@ export const proveOnChain = async (
       // verify the proof on chain
 
       const tx = await tallyContract.tallyVotes(
-        pollContractAddress,
-        mpContractAddress,
         asHex(circuitInputs.newTallyCommitment as BigNumberish),
         formattedProof,
       );

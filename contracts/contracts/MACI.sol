@@ -112,9 +112,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     SignUpGatekeeper _signUpGatekeeper,
     InitialVoiceCreditProxy _initialVoiceCreditProxy,
     TopupCredit _topupCredit,
-    uint8 _stateTreeDepth,
-    Verifier _verifier,
-    VkRegistry _vkRegistry
+    uint8 _stateTreeDepth
   ) payable {
     // Deploy the state AccQueue
     stateAq = new AccQueueQuinaryBlankSl(STATE_TREE_SUBDEPTH);
@@ -133,7 +131,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
-    stateTreeDepth = _stateTreeDepth;
+    STATE_TREE_DEPTH = _stateTreeDepth;
 
     signUpTimestamp = block.timestamp;
 
